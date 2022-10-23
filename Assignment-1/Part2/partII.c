@@ -73,8 +73,19 @@ int main(int argc, char *argv[]){
                 read(SecondChildParent[0], &secondoutput, sizeof(secondoutput));
                 close(SecondChildParent[0]); 
 
-	       	printf("Parent: Final result is %d.\n",firstoutput+secondoutput);		
+		int finalresult = firstoutput.secondouput;
+	       	printf("Parent: Final result is %d.\n",finalresult);		
 		sleep(5);
+
+		int killed = kill(pid, SIGKILL);
+                        if (killed==0) {
+                                for(int i=0; i<2; i++){
+                                printf("Child %d killed \n", pidList[i] );
+                                }
+                                sleep(9);
+
+                        }
+               killed = wait(NULL);
 	}
 
      else if(pid==0){
@@ -112,20 +123,7 @@ int main(int argc, char *argv[]){
 			sleep(5);
 				
                         write(SecondChildParent[1], &result, sizeof(result));
-                        close(SecondChildParent[1]);
-			int killed = kill(pid, SIGKILL);
-			if (killed==0) {
-			       	for(int i=0; i<2; i++){
-				printf("Child %d killed \n", pidList[i] );
-				}
-				sleep(9);
-
-			}
-			killed = wait(NULL);
-		    } 
-	     
-	     
-
+                        close(SecondChildParent[1]);	     	     
 	}
 
 	else if (pid <0) printf("Fork failed...");
