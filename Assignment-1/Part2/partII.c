@@ -108,7 +108,7 @@ int main(int argc, char *argv[]){
 			sleep(5);
                         
 			int result = getpid() / parentoutput2;
-                        printf("Second Child: Input %d, Output %d \n", parentoutput2, getpid(), result);
+                        printf("Second Child: Input %d, Output %d \n", parentoutput2,result);
 			sleep(5);
 				
                         write(SecondChildParent[1], &result, sizeof(result));
