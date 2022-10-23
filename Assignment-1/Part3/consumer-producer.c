@@ -7,9 +7,12 @@
 #include <string.h>
 #include <unistd.h>
 
+
+
+//this function choose random number between len of the input then swap the index randomly
 void swap(char string[]){
-        int num1 = (rand() % (strlen(string) - 0  + 1));
-	int num2 = (rand() % (strlen(string) - 0  + 1));
+        int num1 = (rand() % (strlen(string) + 1));
+	int num2 = (rand() % (strlen(string) + 1));
 	char temp = string[num1];
 	string[num1] = string[num2];
 	string[num2] =temp;
@@ -17,10 +20,13 @@ void swap(char string[]){
 
 int main(int argc, char *argv[])
 {
+	//for rand fınction srand is used
 	srand(getpid());
+	//const variables for shared memory
 	const char *name = "OS";
 	const int SIZE = 4096;
 
+	//below this line is for creating and confirung the shared memory 
 	int shm_fd;
 	void *ptr;
 	
@@ -37,4 +43,7 @@ int main(int argc, char *argv[])
                 return -1;
 
         }
+
+	//I could not write the part of reading the memory :(
+
 }
