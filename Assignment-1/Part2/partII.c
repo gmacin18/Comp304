@@ -47,9 +47,10 @@ int main(int argc, char *argv[]){
        	for(int i=0; i<2; i++){
 		 pid = fork ();
 		if(pid==0){
-			pidList[i] = getpid();
-		   break;
-		}	
+		   	pidList[i]=getpid();
+			break;
+		}
+			
 	}
 
 	if(pid>0){ // the parent operations is starting
@@ -80,8 +81,9 @@ int main(int argc, char *argv[]){
 
 		int killed = kill(pid, SIGKILL);
                         if (killed==0) {
-                                for(int i=0; i<2; i++){
-                                printf("Child %d killed \n", pidList[i] );
+				printf("Child %d killed \n",getpid());
+                                for(int i=0; i<1; i++){
+                                printf("Child %d killed \n",pidList[i]);
                                 }
                                 sleep(9);
 
