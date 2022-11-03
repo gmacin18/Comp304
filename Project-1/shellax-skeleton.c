@@ -59,6 +59,7 @@ int free_command(struct command_t *command)
 	{
 		for (int i=0; i<command->arg_count; ++i)
 			free(command->args[i]);
+                /// TODO: do your own exec with path resolving using execv()
 		free(command->args);
 	}
 	for (int i=0;i<3;++i)
@@ -367,14 +368,50 @@ int process_command(struct command_t *command)
 		// set args[arg_count-1] (last) to NULL
 		command->args[command->arg_count-1]=NULL;
 
-		execvp(command->name, command->args); // exec+args+path
-		exit(0);
+//		execvp(command->name, command->args); // exec+args+path
+//		exit(0);
 		/// TODO: do your own exec with path resolving using execv()
+		char *env_path = getenv("PATH");
+		char env_array[512][512];
+	
+		char *currentDir = getenv("PWD");
+		char *token;
+
+		strcat(currentDir, "/");
+		strcat(currentDir, command->name);
+
+
+		token = strtok(env_path, ":");
+
+
+		int num_of_env = 0;
+		while(1){
+			if(token==NULL){
+				break;
+			}
+			
+			strcpy(env_array[num_of_env], token);
+			num_of_env++;
+			token = strtok(NULL, ":");
+		}
+
+		if (execv(currentDir, command->args) != -1) exit(0);
+
+		for(int i = 0; i<num_of_env; i++) {
+			strcat(env_array[i], "/");
+			strcat(env_array[i], command->name);
+			if (execv(env_array[i], command->args) != -1) exit(0);
+		}
+
+		// If command is not found in any of system paths or current path, printing error message.
+		printf("-%s: %s: command not found\n", sysname, command->name);
+		exit(0);
 	}
 	else
 	{
     // TODO: implement background processes here
-    wait(0); // wait for child process to finish
+    		if(!command->background)
+    			wait(0); // wait for child process to finish
 		return SUCCESS;
 	}
 
