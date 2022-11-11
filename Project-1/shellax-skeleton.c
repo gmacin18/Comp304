@@ -6,6 +6,12 @@
 #include <string.h>
 #include <stdbool.h>
 #include <errno.h>
+
+#include <sys/types.h>
+#include <dirent.h>
+#include <fcntl.h>
+#include <stddef.h>
+
 const char * sysname = "shellax";
 
 enum return_codes {
@@ -23,6 +29,10 @@ struct command_t {
 	char *redirects[3]; // in/out redirection
 	struct command_t *next; // for piping
 };
+
+const char* path_finder(char *cmd);
+void pipe_handler (struct command_t *command, int temp_fd);
+
 
 /**
  * Prints a command struct
@@ -344,6 +354,8 @@ int process_command(struct command_t *command)
 		}
 	}
 
+	int output_f; //new
+
 	pid_t pid=fork();
 	if (pid==0) // child
 	{
@@ -368,9 +380,40 @@ int process_command(struct command_t *command)
 		// set args[arg_count-1] (last) to NULL
 		command->args[command->arg_count-1]=NULL;
 
+		command->arg_count--; //new
 //		execvp(command->name, command->args); // exec+args+path
 //		exit(0);
-		/// TODO: do your own exec with path resolving using execv()
+
+		//handles the I/O redirection
+		if(command->redirects[1]!=NULL){  //for I/O redirection '>' (truncate)
+		    output_f = open(command->args[command->arg_count-1],  O_WRONLY | O_CREAT | O_TRUNC ,S_IRUSR | S_IWUSR | S_IRGRP);
+		    dup2(output_f,1);
+		    close(output_f);
+		    command->args[command->arg_count-1]=NULL;
+
+
+		}else if(command->redirects[2]!=NULL){ //for I/O redirection '>>' (append)
+		    output_f = open(command->args[command->arg_count-1], O_WRONLY | O_CREAT | O_APPEND,S_IRUSR | S_IWUSR | S_IRGRP);
+		    dup2(output_f,1);
+		    close(output_f);
+		    command->args[command->arg_count-1]=NULL;
+		}else if(command->redirects[0]!= NULL){ //for I/O redirection '<' (input)
+		    FILE *f;
+		    char input[150]={"input"};
+		    f = fopen (command->args[1], "r");
+		    fgets(input,150,f);
+		    input[strlen(input)-1]='\0';
+
+		    char *const *input_f= (char *const *) input;
+		    execv(command->name, input_f);
+
+		} else if(command->next != NULL) {  // pipe command
+		    pipe_handler(command,STDIN_FILENO);  
+		    return SUCCESS;
+		}
+
+
+		// TODO: do your own exec with path resolving using execv()
 		char *env_path = getenv("PATH");
 		char env_array[512][512];
 	
@@ -419,4 +462,83 @@ int process_command(struct command_t *command)
 
 	printf("-%s: %s: command not found\n", sysname, command->name);
 	return UNKNOWN;
+}
+
+//finds the path to the given command
+const char* path_finder(char *c) {    
+    FILE *f;
+    char *command_path=malloc(150);
+    char arg[150]="which ";
+    strcat(arg,c); 
+    strcat(arg," > temp.txt");
+    system(arg); //writes the path to the text file
+    f = fopen ("temp.txt", "r");   
+    fgets(command_path,150,f);
+    int length = strlen(command_path);
+    command_path[length-1]='\0';
+    system("rm temp.txt");//removes the temporarily used file  
+    
+    return command_path;
+}
+
+
+//handles the pipe command
+void pipe_handler (struct command_t *command, int temp_fd) {
+    if (command->next==NULL) {
+        const char *command_path=path_finder(command->name);
+        dup2(temp_fd, 0);
+        if (command->arg_count>0 & strcmp(command->name,command->args[0])!=0) {
+		command->arg_count +=1;
+		command->args = (char **) realloc(command->args, sizeof(char *) * (command->arg_count));
+                command->args[0] = command->args[1];		
+		for (int i=1; i<command->arg_count-1; i++){
+			command->args[i] = command->args[i-1]; 
+		}
+
+                command->args[0] = strdup(command->name);
+        }
+        execv(command_path, command->args);
+        return;
+    }
+
+    int fd[2]; 
+    if(pipe(fd) == -1) { //pipe is created
+        printf("Error when creating the pipe. \n");
+        exit(1);
+    }
+
+
+    struct command_t *temp;
+    temp = command->next;
+
+    const char *path1=path_finder(command->name);
+    const char *path2=path_finder(temp->name);
+
+
+    if(fork() == 0){
+        dup2(temp_fd,0);
+        dup2(fd[1], 1);
+        close(fd[0]); //read-end is closed
+        if (command->arg_count>0 & strcmp(command->name,command->args[0])!=0) {
+		command->arg_count +=1;
+                command->args = (char **) realloc(command->args, sizeof(char *) * (command->arg_count));
+		command->args[0] = command->args[1];
+                for (int i=0; i<command->arg_count-1; i++){
+			command->args[i] = command->args[i-1];
+		}
+                command->args[0] = strdup(command->name);
+        }
+        execv(path1, command->args);
+    }
+    else {
+        wait(0);
+        close(fd[1]); //write-end is closed
+	if (temp->arg_count==0) {
+	    temp->arg_count +=1;
+            temp->args = (char **) realloc(temp->args, sizeof(char *) * (temp->arg_count));
+            temp->args[0] = strdup(temp->name);
+        }
+        pipe_handler(temp,fd[0]);
+        return;
+    }
 }
