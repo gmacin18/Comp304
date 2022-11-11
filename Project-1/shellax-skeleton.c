@@ -354,6 +354,81 @@ int process_command(struct command_t *command)
 		}
 	}
 
+	if (strcmp(command->name, "uniq")==0){
+                FILE *f;
+
+                char input[512]={"input"};
+
+                f = fopen (command->args[command->arg_count-1], "r");
+		int elem_count = 0;
+		char elem_array[100][100];
+
+		while(fgets(input, sizeof(input), f)!= NULL){
+                	input[strlen(input)-1]='\0';
+			strcpy(elem_array[elem_count++], input);
+		}
+
+
+
+		char uniq_elems[100][100];
+		int count=0;
+		for(int i=0; i<elem_count; i++){
+			bool contains = false;
+		
+			for(int j=0; j<elem_count; j++){
+				if(strcmp(uniq_elems[j], elem_array[i])==0){
+					contains = true;
+					break;
+				}
+			}
+			if(!contains){
+				strcpy(uniq_elems[count], elem_array[i]);
+				count++;
+			}
+		}
+			
+
+		if(command->arg_count==1){
+	                for(int i=0; i<count; i++){
+        	                printf("%s\n", uniq_elems[i]);
+               		}
+		
+		}else if(command->arg_count == 2){
+			printf("args: %s \n",command->args[0]);
+			if(strcmp(command->args[0],"-c")||strcmp(command->args[0],"--count")){
+				int occ_arr[count];
+
+				for(int i=0; i<count; i++){
+					occ_arr[i] = 0;
+				
+				}
+				printf("count: %d, elemcount: %d\n",count,elem_count);
+				for(int k=0; k<elem_count; k++){
+					for(int j=0; j<count; j++){
+						if(strcmp(elem_array[k], uniq_elems[j])==0){
+							occ_arr[j]++;
+							break;
+						}
+					
+					}
+				}
+	                        for(int i=0; i<count; i++){
+	                                printf("%d  %s\n",occ_arr[i], uniq_elems[i]);
+                        }
+
+
+			}
+
+		}else {
+			printf("Error occured.\n");
+		}
+		fclose(f);		
+
+
+		
+        	return SUCCESS;
+	}
+
 	int output_f; //new
 
 	pid_t pid=fork();
