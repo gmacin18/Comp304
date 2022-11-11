@@ -428,7 +428,40 @@ int process_command(struct command_t *command)
 		
         	return SUCCESS;
 	}
+	
+	if(strcmp(command->name, "wiseman")==0){
+		int min = 0;
+		pid_t child;
+		char temp[150];
 
+		char *min_ptr = command->args[0];
+		if (min_ptr != NULL)
+		{
+		  min = atoi(min_ptr);
+		}
+		
+		FILE *file_ptr = fopen("temp.txt", "w");
+		fprintf(file_ptr, "*/%d * * * * fortune | espeak\n", min);
+		fclose(file_ptr);
+		int childStatus;
+		child = fork();
+		  
+		if(child == 0) {
+		  char *cronArgs[] = {
+		    "/usr/bin/crontab",
+		    "temp.txt",
+		    0
+		  };
+		  execv(cronArgs[0], cronArgs);
+		}
+		else {
+		  waitpid(child, &childStatus, 0);
+		}
+		remove("temp.txt"); //remove temp
+		return SUCCESS;
+
+	}
+	
 	int output_f; //new
 
 	pid_t pid=fork();
