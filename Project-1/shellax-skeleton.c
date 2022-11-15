@@ -536,6 +536,13 @@ int process_command(struct command_t *command)
 	return SUCCESS;
 }
 	
+	if (strcmp(command->name, "psvis")==0){
+                if(command->arg_count !=2){
+                        printf("Psvis requires two arguments.");
+                        return EXIT;
+                }
+        
+        } 
 	
 	
 	int output_f; //new
@@ -648,7 +655,6 @@ int process_command(struct command_t *command)
 	return UNKNOWN;
 }
 
-//finds the path to the given command
 const char* path_finder(char *c) {    
     FILE *f;
     char *command_path=malloc(150);
@@ -665,8 +671,6 @@ const char* path_finder(char *c) {
     return command_path;
 }
 
-
-//handles the pipe command
 void pipe_handler (struct command_t *command, int temp_fd) {
     if (command->next==NULL) {
         const char *command_path=path_finder(command->name);
