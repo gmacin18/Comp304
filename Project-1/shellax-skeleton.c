@@ -542,7 +542,33 @@ int process_command(struct command_t *command)
                         return EXIT;
                 }
         
-        } 
+          	pid_t pid = fork();
+                if (pid == 0) //child process
+                {
+                        char function[150];
+                        strcpy(function,"sudo insmod mymodule.ko ");
+                        strcat(function, command->args[0]);
+                        system(function);
+
+                } else {
+                        pid_t pid2 = fork();
+                        if (pid2 == 0) {
+                                char function[150];
+                                strcpy(function, "sudo rmmod mymodule");
+                                system(function);
+
+                        } else {
+                        char function[150];
+                        strcpy(function,command->args[1]);
+                        strcat(function, "sudo dmesg -c");
+
+                        system(function);
+
+                }
+        }
+
+        return SUCCESS;
+}
 	
 	
 	int output_f; //new
