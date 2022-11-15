@@ -368,8 +368,6 @@ int process_command(struct command_t *command)
 			strcpy(elem_array[elem_count++], input);
 		}
 
-
-
 		char uniq_elems[100][100];
 		int count=0;
 		for(int i=0; i<elem_count; i++){
@@ -394,38 +392,29 @@ int process_command(struct command_t *command)
                		}
 		
 		}else if(command->arg_count == 2){
-			printf("args: %s \n",command->args[0]);
 			if(strcmp(command->args[0],"-c")||strcmp(command->args[0],"--count")){
 				int occ_arr[count];
-
 				for(int i=0; i<count; i++){
 					occ_arr[i] = 0;
-				
 				}
-				printf("count: %d, elemcount: %d\n",count,elem_count);
 				for(int k=0; k<elem_count; k++){
 					for(int j=0; j<count; j++){
 						if(strcmp(elem_array[k], uniq_elems[j])==0){
 							occ_arr[j]++;
 							break;
 						}
-					
 					}
 				}
 	                        for(int i=0; i<count; i++){
 	                                printf("%d  %s\n",occ_arr[i], uniq_elems[i]);
                         }
 
-
 			}
 
 		}else {
 			printf("Error occured.\n");
 		}
-		fclose(f);		
-
-
-		
+		fclose(f);	
         	return SUCCESS;
 	}
 	
@@ -462,13 +451,100 @@ int process_command(struct command_t *command)
 
 	}
 	
+	
+	//Custom command from Gülbarin Maçin
+	if(strcmp(command->name,"horoscope")==0){
+        	int day,month;  
+   	        char horoscope[100];
+
+		char *day_ptr = command->args[0];
+                if (day_ptr != NULL)
+                {
+                  day = atoi(day_ptr);
+                }
+
+		char *month_ptr = command->args[1];
+                if (month_ptr != NULL)
+                {
+                  month = atoi(month_ptr);
+                }
+	
+    	    if ((month == 12 && day >= 12) || (month == 1 & day<= 20))
+            {
+                strcpy(horoscope,"espeak 'Your horoscope is Capricorn'");
+	
+            }
+ 
+            else if ((month == 9 & day >= 22) || (month == 10 & day <= 23))
+            {
+            
+                strcpy(horoscope,"espeak 'Your horoscope is Libra'");
+            }
+ 
+            else if ((month == 1 & day >= 21) || (month == 2 & day <= 19))
+            {
+               strcpy(horoscope, "espeak 'Your horoscope is Aquarius'");
+                
+            }
+ 
+            else if ((month == 2 & day >= 20) || (month == 3 & day <= 20))
+            {
+                strcpy(horoscope,"espeak 'Your horoscope is Pisces'");
+            }
+ 
+            else if ((month == 3 & day >= 21) || (month== 4 & day <= 20))
+            {
+                strcpy(horoscope,"espeak 'Your horoscope is Aries'");
+            }
+ 
+            else if ((month == 4 & day >= 21) || (month == 5 & day <= 21))
+            {
+                strcpy(horoscope,"espeak 'Your horoscope is Taurus'");
+            }
+ 
+            else if ((month == 5 & day >= 22) || (month == 6 & day <= 21))
+            {
+                strcpy(horoscope, "espeak 'Your horoscope is Gemini'");
+            }
+ 
+            else if ((month == 6 & day >= 22) || (month == 7 & day <= 23))
+            {
+                strcpy(horoscope, "espeak 'Your horoscope is Cancer'");
+            }
+ 
+            else if ((month == 7 & day >= 24) || (month == 8 & day <= 23))
+            {
+                strcpy(horoscope,"espeak 'Your horoscope is Leo'");
+            }
+ 
+            else if ((month == 8 & day >= 24) || (month == 9 & day <= 23))
+            {
+               	strcpy(horoscope, "espeak 'Your horoscope is Virgo'");
+            }
+  
+            else if ((month == 10 & day >= 23) || (month == 11 & day <= 22))
+            {
+                strcpy(horoscope,"espeak 'Your horoscope is Scorpio'");
+            }
+ 
+            else if ((month == 11 & day >= 23) || (month == 12 & day <= 22))
+            {
+                strcpy(horoscope, "espeak 'Your horoscope is Sagittarius'");
+            } 	
+            
+            system(horoscope);
+	return SUCCESS;
+}
+	
+	
+	
 	int output_f; //new
 
 	pid_t pid=fork();
 	if (pid==0) // child
 	{
 		/// This shows how to do exec with environ (but is not available on MacOs)
-	    // extern char** environ; // environment variables
+	        // extern char** environ; // environment variables
 		// execvpe(command->name, command->args, environ); // exec+args+path+environ
 
 		/// This shows how to do exec with auto-path resolve
