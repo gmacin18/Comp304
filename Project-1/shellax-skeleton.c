@@ -536,6 +536,46 @@ int process_command(struct command_t *command)
 	return SUCCESS;
 }
 	
+	//Custom command from Çisem Özden
+	if(strcmp(command->name, "ku-help")==0){
+		printf("\nHello! From here you can reach any of the following helpful pages related to Koç University.\n");
+		printf("1- Kusis\n2- Blackboard\n3- Faculty-page (Also specify the code of the faculty)\n     - eng (college of engineering)\n     - cssh (college of social sciences)\n     - case (college of administrative sciences and economics)\n     - science (college of sciences)\n\n");
+		printf("4- OIP (Office of International Programs)\n\n");
+
+		char cmd[100];
+
+		printf("\nPlease specify the name  of the website you want to reach.\n");
+		scanf("%[^\n]",cmd);
+		
+		if(strcmp(cmd, "Kusis")==0){
+			system("xdg-open https://kusis.ku.edu.tr/psp/ps/?cmd=login");
+			return SUCCESS;
+		}else if(strcmp(cmd, "Blackboard")==0){
+			system("xdg-open https://ku.blackboard.com/");
+			return SUCCESS;
+		}else if(strcmp(cmd, "OIP")==0){
+			system("xdg-open https://oip.ku.edu.tr/");
+			return SUCCESS;
+		}else if(strchr(cmd, ' ') != NULL){
+			char * arg1 = strtok(cmd, " ");
+			char * arg2 = strtok(NULL, " ");
+			if(strcmp("Faculty-page", arg1)==0 & (strcmp(arg2, "case")==0 | strcmp(arg2,"cssh" )==0 | strcmp(arg2, "eng")==0 | strcmp(arg2, "science")==0)){
+				char arg[100] = "xdg-open https://";
+				strcat(arg, arg2);
+				strcat(arg, ".ku.edu.tr/");
+				system(arg);
+				return SUCCESS;
+			}
+			else{
+			printf("You entered wrong code.\n");
+			return EXIT;
+			}
+		}else{
+			printf("You entered wrong code.\n");
+			return EXIT;
+		}	
+	}
+	
 	if (strcmp(command->name, "psvis")==0){
                 if(command->arg_count !=2){
                         printf("Psvis requires two arguments.");
